@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-2v=@wy7j19otw=kpg8bzp3#t5hbxdhgp9imrtiz&m3b@2$r^$y
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['ec2-3-144-195-238.us-east-2.compute.amazonaws.com', 'localhost']
+ALLOWED_HOSTS = ['ec2-3-144-195-238.us-east-2.compute.amazonaws.com', '*']
 
 
 # Application definition
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'budget_app',
 ]
 
 MIDDLEWARE = [
@@ -54,7 +55,7 @@ ROOT_URLCONF = 'tech_exercise_proj.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR /'budget_app' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
