@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class HelloTestConfig(AppConfig):
+class BudgetDashboardConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'hello_test'
+    name = 'budget_app'

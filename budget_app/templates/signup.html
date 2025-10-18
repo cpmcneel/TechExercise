@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verispend Sign Up</title>
+</head>
+<body>
+    <div>
+        <h1>Verispend Sign Up</h1>
+    </div>
+    <div>
+        <form class="signup-form" action="{% url 'signup'%}" method="POST">
+            {% csrf_token %}
+            {{form}}
+            <button>Sign Up</button>
+            <a href={% url 'landing'%}>Home</a>
+        </form>
+    </div>
+</body>
+</html>
