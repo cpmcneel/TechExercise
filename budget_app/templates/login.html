@@ -13,8 +13,8 @@
         <form class="login-form" action="{% url 'login'%}" method="POST">
             {% csrf_token %}
             {{form}}
-            <button>Login</button>
-            <a href={% url 'landing'%}>Home</a>
+            <button class="auth-button" >Login</button>
+            <a class="auth-button" href={% url 'landing'%}>Home</a>
         </form>
     </div>
 </body>

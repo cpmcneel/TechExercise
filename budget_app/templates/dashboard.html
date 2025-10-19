@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% block title%}
+        {{user}} Dashboard
+        {% endblock %}
+    </title>
+</head>
+<body>
+    <div>
+        <ul class="dash-header">
+            <h2 class="dash-header-title">{{user}}'s Dashboard</h2>
+            <form class="logout" action="{% url 'logout' %}" method="POST">
+                {% csrf_token %}
+                <button class"logout-button" aria-label="User logout" title="User logout">
+                    Logout
+                </button>
+            </form>
+        </ul>
+    </div>
+    <div>
+    </div>
+    
+</body>
+</html>
