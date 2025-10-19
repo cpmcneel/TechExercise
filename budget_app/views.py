@@ -1,8 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from datetime import date
+from .models import *
+from .forms import *
 
 # Create your views here.
 def landing_view(request):
@@ -24,21 +26,21 @@ def login_view(request):
         form = AuthenticationForm(data=request.POST)
         if form.is_valid():
             user = form.get_user()
+            date_today = date.today()
             login(request, user)
-            todays_date = date.today()
 
-            budget = Budget.objects.filter(
+            budget, created = Budget.objects.get_or_create(
                 user=user,
-                date__year=todays_date.year,
-                date__month=todays_date.month
-            )
+                year=date_today.year, 
+                month=date_today.month, 
+                defaults={"total_limit" : 0}
+                )
 
-            if not budget:
-                budget = Budget.objects.create(user=user, total_limit=0)
-
+            if created:
                 last_month = (
                     Budget.objects.filter(user=user)
-                        .exclude(pk=budget.pk)
+                        .exclude(public_id=budget.public_id)
+                        .order_by("-year", "-month")
                         .first()
                     )
                 if last_month:
@@ -63,7 +65,54 @@ def logout_view(request):
 @login_required(login_url="login")
 def dashboard_view(request):
     user = request.user
-    context = [
-        {"user" : user},
-    ]
+
+    date_today = date.today()
+    budget = get_object_or_404(
+        Budget,
+        user=user,
+        year=date_today.year,
+        month=date_today.month
+        )
+    categories = budget.categories.all()
+    transactions = budget.transactions.all()
+
+    context = {
+        "user" : user,
+        "budget" : budget,
+        "categories" : categories,
+        "transactions" : transactions
+    }
     return render(request, "dashboard.html", context)
+
+@login_required(login_url="login")
+def create_category(request):
+    if request.method == "POST":
+        form = CreateCategory(request.POST)
+        if form.is_valid():
+            new_category = form.save(commit=False)
+
+            date_today = date.today()
+            budget = Budget.objects.get(user=request.user, year=date_today.year, month=date_today.month)
+
+            new_category.user = request.user
+            new_category.budget = budget
+            new_category.save()
+    return redirect("dashboard")
+
+
+@login_required(login_url="login")
+def create_transaction(request, category_id):
+    if request.method == "POST":
+        form = CreateTransaction(request.POST)
+        if form.is_valid():
+            new_transaction = form.save(commit=False)
+            
+            date_today = date.today()
+            budget = Budget.objects.get(user=request.user, year=date_today.year, month=date_today.month)
+            category = get_object_or_404(Category, public_id=category_id, user=request.user)
+
+            new_transaction.user = request.user
+            new_transaction.budget = budget
+            new_transaction.category = category
+            new_transaction.save()
+    return redirect("dashboard")
