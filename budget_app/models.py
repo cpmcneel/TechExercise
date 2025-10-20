@@ -22,7 +22,8 @@ class Budget(models.Model):
     public_id = models.UUIDField(default=uuid4, primary_key=True, editable=False, unique=True)
     year = models.PositiveIntegerField("Year", default=current_year, editable=False)
     month = models.PositiveIntegerField("Month", default=current_month, editable=False)
-    total_limit = models.IntegerField("Total Limit")
+    total_limit = models.FloatField("Total Limit", default=0)
+    total_spent = models.FloatField("Total Spent", default=0)
 
     class Meta:
         constraints = [# unique budget per user and month/year
@@ -40,6 +41,7 @@ class Category(models.Model):
         verbose_name="User",
         on_delete=models.CASCADE
         )
+
     budget = models.ForeignKey(
         Budget, 
         related_name="categories",
@@ -48,9 +50,11 @@ class Category(models.Model):
         )
 
     public_id = models.UUIDField(default=uuid4, primary_key=True, editable=False, unique=True)
-    date = models.DateField("Date", auto_now_add=True)
+    date = models.DateTimeField("Date", auto_now_add=True)
     name = models.CharField("Name", max_length=50)
-    limit = models.IntegerField("Limit")
+    limit = models.FloatField("Limit",)
+    spent = models.FloatField("Spent", default=0)
+
 
     class Meta:
         constraints = [ #unique categories in each budget
@@ -87,9 +91,9 @@ class Transaction(models.Model):
         )
 
     public_id = models.UUIDField(default=uuid4, primary_key=True, editable=False, unique=True)
-    date = models.DateField("Date", auto_now_add=True)
+    date = models.DateTimeField("Date", auto_now_add=True)
     name = models.CharField("Name", max_length=50)
-    amount = models.IntegerField("Amount")
+    amount = models.FloatField("Amount")
 
     class Meta:
         ordering = ["-date"]
