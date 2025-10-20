@@ -10,9 +10,12 @@
     </title>
 </head>
 <body>
+    {% block header %}
     <div>
         <ul class="dash-header">
-            <h2 class="dash-header-title">{{user}}'s Budget for {{budget.month}}/{{budget.year}}</h2>
+            <h2 class="dash-header-title">{{user}}'s Dashboard</h2>
+            <a href="{% url 'dashboard' %}">Home</a>
+            <a href="{% url 'search' %}">Search</a>
             <form class="logout" action="{% url 'logout' %}" method="POST">
                 {% csrf_token %}
                 <button class"logout-button" aria-label="User logout" title="User logout">
@@ -21,19 +24,29 @@
             </form>
         </ul>
     </div>
+    {% endblock header %}
+    {% block content %}
     <div>
+        <h3 class="category-header">Create Category</h3>
         <form class="category-submition" action="{% url 'create_category' %}" method="POST">
             {% csrf_token %}
             {{ category_form }}
             <button class="category-submition-submit">Add Category</button>
         </form>
+        <h3>Budget Limit: ${{budget.total_limit|floatformat:2}}</h3>
+                    <form class="budget-limit" action="{% url 'create_budget_limit' %}" method="POST">
+                        {% csrf_token %}
+                        {{budget_limit_form}}
+                        <button class="budget-limit-submit">Set Limit</button>
+                    </form>
         <hr>
+        <h3 class="categories-header">Categories</h3>
         <div>
             {% for category in categories %}
             {% if category.name != "Savings" %}
             <div>
                 <div>
-                    <h3>{{category.name}} ${{category.spent|floatformat:2}}/${{category.limit|floatformat:2}}</h3>
+                    <h4>{{category.name}} ${{category.spent|floatformat:2}}/${{category.limit|floatformat:2}}</h4>
                     <form action="{% url 'delete_category' category.public_id %}" method="POST">
                         {% csrf_token %}
                         <button class="category-delete">Remove Category</button>
@@ -54,18 +67,18 @@
                 <form class="transaction-submition" action="{% url 'create_transaction' category.public_id %}" method="POST">
                     {% csrf_token %}
                     {{transaction_form}}
-                    <button class="transaction-submition-submit">Add Transaction</button>
+                    <button class="transaction-form-submit">Add Transaction</button>
                 </form>
             </div>
             {% endif %}
             {% endfor %}
             <div>
                 <div class="savings-header">
-                    <h3>{{savings_category.name}}   Goal: ${{savings_category.spent|floatformat:2}}/${{savings_category.limit|floatformat:2}}</h3>
+                    <h4>{{savings_category.name}}   Goal: ${{savings_category.spent|floatformat:2}}/${{savings_category.limit|floatformat:2}}</h4>
                         <form class="savings-goal" action="{% url 'create_savings_goal' savings_category.public_id %}" method="POST">
                         {% csrf_token %}
                         {{savings_goal_form}}
-                        <button class="savings-goal-submit">Update Goal</button>
+                        <button class="form-submit">Set Goal</button>
                     </form>
                 </div>
                 {% for transaction in savings_category.transactions.all %}
@@ -83,11 +96,16 @@
                 <form class="savings-submition" action="{% url 'create_savings_transaction' savings_category.public_id %}" method="POST">
                     {% csrf_token %}
                     {{savings_form}}
-                    <button class="savings-submition-submit">Add to Savings</button>
+                    <button class="transaction-form-submit">Add to Savings</button>
                 </form>
             </div>
         </div>
+        <hr>
+        <div class="totals">
+            <h3>Total Allocated: ${{categories_total|floatformat:2}}/${{budget.total_limit|floatformat:2}}</h3>
+            <h3>Total Spent: ${{budget.total_spent|floatformat:2}}/${{budget.total_limit|floatformat:2}}</h3>
+        </div>
     </div>
-    
+{% endblock content %}
 </body>
 </html>
