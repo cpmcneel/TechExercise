@@ -12,7 +12,7 @@
 <body>
     <div>
         <ul class="dash-header">
-            <h2 class="dash-header-title">{{user}}'s Dashboard</h2>
+            <h2 class="dash-header-title">{{user}}'s Budget for {{budget.month}}/{{budget.year}}</h2>
             <form class="logout" action="{% url 'logout' %}" method="POST">
                 {% csrf_token %}
                 <button class"logout-button" aria-label="User logout" title="User logout">
@@ -22,7 +22,71 @@
         </ul>
     </div>
     <div>
-        
+        <form class="category-submition" action="{% url 'create_category' %}" method="POST">
+            {% csrf_token %}
+            {{ category_form }}
+            <button class="category-submition-submit">Add Category</button>
+        </form>
+        <hr>
+        <div>
+            {% for category in categories %}
+            {% if category.name != "Savings" %}
+            <div>
+                <div>
+                    <h3>{{category.name}} ${{category.spent|floatformat:2}}/${{category.limit|floatformat:2}}</h3>
+                    <form action="{% url 'delete_category' category.public_id %}" method="POST">
+                        {% csrf_token %}
+                        <button class="category-delete">Remove Category</button>
+                    </form>
+                </div>
+                {% for transaction in category.transactions.all %}
+                        <div>
+                            <p>{{transaction.name}} - ${{transaction.amount|floatformat:2}}</p>
+                            <form action="{% url 'delete_transaction' transaction.public_id category.public_id %}" method="POST">
+                                {% csrf_token %}
+                                <button class="transaction-delete">-</button>
+                            </form>
+                        </div>
+                {% empty %}
+                    <p>No Transactions Yet</p>
+                {% endfor %}
+                </div>
+                <form class="transaction-submition" action="{% url 'create_transaction' category.public_id %}" method="POST">
+                    {% csrf_token %}
+                    {{transaction_form}}
+                    <button class="transaction-submition-submit">Add Transaction</button>
+                </form>
+            </div>
+            {% endif %}
+            {% endfor %}
+            <div>
+                <div class="savings-header">
+                    <h3>{{savings_category.name}}   Goal: ${{savings_category.spent|floatformat:2}}/${{savings_category.limit|floatformat:2}}</h3>
+                        <form class="savings-goal" action="{% url 'create_savings_goal' savings_category.public_id %}" method="POST">
+                        {% csrf_token %}
+                        {{savings_goal_form}}
+                        <button class="savings-goal-submit">Update Goal</button>
+                    </form>
+                </div>
+                {% for transaction in savings_category.transactions.all %}
+                        <div>
+                            <p>Saved - ${{transaction.amount|floatformat:2}}</p>
+                            <form action="{% url 'delete_transaction' transaction.public_id savings_category.public_id %}" method="POST">
+                                {% csrf_token %}
+                                <button class="transaction-delete">-</button>
+                            </form>
+                        </div>
+                {% empty %}
+                    <p>Nothing Saved Yet</p>
+                {% endfor %}
+                </div>
+                <form class="savings-submition" action="{% url 'create_savings_transaction' savings_category.public_id %}" method="POST">
+                    {% csrf_token %}
+                    {{savings_form}}
+                    <button class="savings-submition-submit">Add to Savings</button>
+                </form>
+            </div>
+        </div>
     </div>
     
 </body>

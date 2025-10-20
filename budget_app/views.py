@@ -29,17 +29,23 @@ def login_view(request):
             date_today = date.today()
             login(request, user)
 
-            budget, created = Budget.objects.get_or_create(
+            budget, created = Budget.objects.get_or_create( #check if there is a budget for the current month
                 user=user,
                 year=date_today.year, 
                 month=date_today.month, 
                 defaults={"total_limit" : 0}
                 )
 
-            if created:
+            if created: #if we needed to create a new budget load previous categories and cost limits to new budget
+                Category.objects.create( #create base savings category
+                    user=user,
+                    budget=budget,
+                    name="Savings",
+                    limit=0
+                    )   
                 last_month = (
                     Budget.objects.filter(user=user)
-                        .exclude(public_id=budget.public_id)
+                        .exclude(public_id=budget.public_id) 
                         .order_by("-year", "-month")
                         .first()
                     )
@@ -47,11 +53,21 @@ def login_view(request):
                     budget.total_limit=last_month.total_limit
                     budget.save()
                     for category in last_month.categories.all():
-                        Category.objects.create(
+                        if category.name.lower() != "savings":
+                            Category.objects.create(
+                            budget=budget,
+                            name=category.name,
+                            limit=category.limit
+                            )
+            else:
+                if not Category.objects.filter(budget=budget, name__iexact="savings").exists():
+                    Category.objects.create(
+                        user=user,
                         budget=budget,
-                        name=category.name,
-                        limit=category.limit
-                        )
+                        name="Savings",
+                        limit=0
+                    )
+
             return redirect("dashboard")
     else:
         form = AuthenticationForm()
@@ -63,7 +79,7 @@ def logout_view(request):
         return redirect("landing")
 
 @login_required(login_url="login")
-def dashboard_view(request):
+def dashboard_view(request):#load data and dashboard html
     user = request.user
 
     date_today = date.today()
@@ -73,19 +89,31 @@ def dashboard_view(request):
         year=date_today.year,
         month=date_today.month
         )
+
     categories = budget.categories.all()
-    transactions = budget.transactions.all()
+
+    category_form = CreateCategory()
+    transaction_form = CreateTransaction()
+    savings_form = CreateSavingsTransaction()
+    savings_goal_form = CreateSavingsGoal()
+    savings_category = get_object_or_404(Category, user=request.user, budget=budget, name="Savings")
+
+
 
     context = {
         "user" : user,
         "budget" : budget,
         "categories" : categories,
-        "transactions" : transactions
+        "category_form" : category_form,
+        "transaction_form" : transaction_form,
+        "savings_category" : savings_category,
+        "savings_form" : savings_form,
+        "savings_goal_form" : savings_goal_form
     }
     return render(request, "dashboard.html", context)
 
 @login_required(login_url="login")
-def create_category(request):
+def create_category(request): #handle category form submition
     if request.method == "POST":
         form = CreateCategory(request.POST)
         if form.is_valid():
@@ -101,7 +129,7 @@ def create_category(request):
 
 
 @login_required(login_url="login")
-def create_transaction(request, category_id):
+def create_transaction(request, category_id): #handle transaction form submition
     if request.method == "POST":
         form = CreateTransaction(request.POST)
         if form.is_valid():
@@ -114,5 +142,61 @@ def create_transaction(request, category_id):
             new_transaction.user = request.user
             new_transaction.budget = budget
             new_transaction.category = category
+            category.spent += new_transaction.amount
+            budget.total_spent += new_transaction.amount
+            budget.save()
+            category.save()
             new_transaction.save()
     return redirect("dashboard")
+
+@login_required(login_url="login")
+def delete_category(request, category_id):
+    date_today = date.today()
+    budget = Budget.objects.get(user=request.user, year=date_today.year, month=date_today.month)
+    category = get_object_or_404(Category, public_id=category_id, user=request.user)
+    budget.total_spent -= category.spent
+    budget.save()
+    category.delete()
+    return redirect("dashboard")
+        
+@login_required(login_url="login")
+def delete_transaction(request, transaction_id, category_id):
+    date_today = date.today()
+    budget = Budget.objects.get(user=request.user, year=date_today.year, month=date_today.month)
+    transaction = get_object_or_404(Transaction, public_id=transaction_id, user=request.user)
+    category = get_object_or_404(Category, public_id=category_id, user=request.user)
+    budget.total_spent -= category.spent
+    category.spent -= transaction.amount
+    budget.save()
+    category.save()
+    transaction.delete()
+    return redirect("dashboard")
+
+@login_required(login_url="login")
+def create_savings_transaction(request, category_id): #handle transaction form submition
+    if request.method == "POST":
+        form = CreateSavingsTransaction(request.POST)
+        if form.is_valid():
+            new_savings_transaction = form.save(commit=False)
+            
+            date_today = date.today()
+            budget = Budget.objects.get(user=request.user, year=date_today.year, month=date_today.month)
+            savings_category = get_object_or_404(Category, public_id=category_id, user=request.user)
+
+            new_savings_transaction.user = request.user
+            new_savings_transaction.budget = budget
+            new_savings_transaction.category = savings_category
+            savings_category.spent += new_savings_transaction.amount
+            budget.total_spent += new_savings_transaction.amount
+            savings_category.save()
+            new_savings_transaction.save()
+    return redirect("dashboard")
+
+@login_required(login_url="login")
+def create_savings_goal(request, category_id):
+    if request.method == "POST":
+        savings_category = get_object_or_404(Category, public_id=category_id, user=request.user)
+        form = CreateSavingsGoal(request.POST, instance=savings_category)
+        if form.is_valid():
+            form.save()
+        return redirect("dashboard")
