@@ -25,3 +25,18 @@ class CreateSavingsGoal(forms.ModelForm):
         labels={
             "limit" : ""
         }
+
+class CreateBudgetLimit(forms.ModelForm):
+    class Meta:
+        model=Budget
+        fields=["total_limit"]
+        labels={
+            "total_limit" : ""
+        }
+
+class SearchForm(forms.Form):
+    query = forms.CharField(required=False, label="Search term")
+    start_date = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}))
+    end_date = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}))
+    year = forms.IntegerField(required=False)
+    month = forms.IntegerField(required=False)
