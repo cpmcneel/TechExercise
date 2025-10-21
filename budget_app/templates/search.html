@@ -1,5 +1,52 @@
 {% extends "dashboard.html" %}
 
+
 {% block content %}
+<h2>Search Budgets and Transactions</h2>
+<form method="get">
+    {{ form.as_p }}
+    <button type="submit">Search</button>
+</form>
+
+<hr>
+
+<h3>Budgets</h3>
+{% if budgets_page %}
+    <ul>
+        {% for b in budgets_page %}
+            <li>{{ b.month }}/{{ b.year }} - Limit: ${{ b.total_limit }}</li>
+        {% empty %}
+            <li>No budgets found.</li>
+        {% endfor %}
+    </ul>
+    <div>
+        {% if budgets_page.has_previous %}
+            <a href="?{{ request.GET.urlencode }}bpage={{ budgets_page.previous_page_number }}">Previous</a>
+        {% endif %}
+        Page {{ budgets_page.number }} of {{ budgets_page.paginator.num_pages }}
+        {% if budgets_page.has_next %}
+            <a href="?{{ request.GET.urlencode }}bpage={{ budgets_page.next_page_number }}">Next</a>
+        {% endif %}
+    </div>
+{% endif %}
+<h3>Transactions</h3>
+{% if transactions_page %}
+    <ul>
+        {% for t in transactions_page %}
+            <li>{{ t.name }} - ${{ t.amount }} ({{ t.date }})</li>
+        {% empty %}
+            <li>No transactions found.</li>
+        {% endfor %}
+    </ul>
+    <div>
+        {% if transactions_page.has_previous %}
+            <a href="?{{ request.GET.urlencode }}&tpage={{ transactions_page.previous_page_number }}">Previous</a>
+        {% endif %}
+        Page {{ transactions_page.number }} of {{ transactions_page.paginator.num_pages }}
+        {% if transactions_page.has_next %}
+            <a href="?{{ request.GET.urlencode }}&tpage={{ transactions_page.next_page_number }}">Next</a>
+        {% endif %}
+    </div>
+{% endif %}
 
 {% endblock content %}

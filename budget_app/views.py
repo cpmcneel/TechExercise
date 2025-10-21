@@ -6,6 +6,7 @@ from django.db.models import Sum
 from datetime import date
 from .models import *
 from .forms import *
+from django.core.paginator import Paginator
 
 # Create your views here.
 def ensure_current_budget(user):
@@ -76,6 +77,7 @@ def login_view(request):
         form = AuthenticationForm()
     return render(request, "login.html", {"form": form})  
 
+@login_required(login_url="login")
 def logout_view(request):
     if request.method == "POST":
         logout(request)
@@ -152,7 +154,7 @@ def create_transaction(request, category_id): #handle transaction form submition
     return redirect("dashboard")
 
 @login_required(login_url="login")
-def delete_category(request, category_id):
+def delete_category(request, category_id): #handle category deletion
     date_today = date.today()
     budget = get_object_or_404(Budget, user=request.user, year=date_today.year, month=date_today.month)
     category = get_object_or_404(Category, public_id=category_id, user=request.user)
@@ -164,7 +166,7 @@ def delete_category(request, category_id):
     return redirect("dashboard")
         
 @login_required(login_url="login")
-def delete_transaction(request, transaction_id, category_id):
+def delete_transaction(request, transaction_id, category_id): #handle transaction deletion
     date_today = date.today()
     budget = get_object_or_404(Budget, user=request.user, year=date_today.year, month=date_today.month)
     transaction = get_object_or_404(Transaction, public_id=transaction_id, user=request.user)
@@ -201,7 +203,7 @@ def create_savings_transaction(request, category_id): #handle transaction form s
     return redirect("dashboard")
 
 @login_required(login_url="login")
-def create_savings_goal(request, category_id):
+def create_savings_goal(request, category_id): #set savings goal
     if request.method == "POST":
         savings_category = get_object_or_404(Category, public_id=category_id, user=request.user)
         form = CreateSavingsGoal(request.POST, instance=savings_category)
@@ -210,7 +212,7 @@ def create_savings_goal(request, category_id):
         return redirect("dashboard")
 
 @login_required(login_url="login")
-def create_budget_limit(request):
+def create_budget_limit(request): #set budget limit
     if request.method == "POST":
         date_today = date.today()
         budget = get_object_or_404(Budget, user=request.user, year=date_today.year, month=date_today.month)
@@ -220,6 +222,42 @@ def create_budget_limit(request):
         return redirect("dashboard")
 
 @login_required(login_url="login")
-def search_view(request):
-    
-    return render(request, "search.html")
+def search_view(request): #render search page with result pages via paginator
+    form = SearchForm(request.GET)
+    transactions = Transaction.objects.filter(user=request.user).order_by("-date")
+    budgets = Budget.objects.filter(user=request.user).order_by("-year", "-month")
+
+    if form.is_valid():
+        term = form.cleaned_data.get("term")
+        year = form.cleaned_data.get("year")
+        month = form.cleaned_data.get("month")
+        
+        #filter transactions by term, and month/year, filter budgets by month/year
+        if term:
+            transactions = transactions.filter(name__icontains=term)
+        if year:
+            transactions = transactions.filter(date__year=year)
+        if month:
+            transactions = transactions.filter(date__month=month)
+
+        budgets = Budget.objects.filter(user=request.user)
+        if year:
+            budgets = budgets.filter(year=year)
+        if month:
+            budgets = budgets.filter(month=month)
+
+    trans_paginator = Paginator(transactions, 12)
+    budg_paginator = Paginator(budgets, 12) #made it 12 because if you get a whole year of budgets it will look decent
+
+    trans_page_number = request.GET.get("tpage", 1)
+    transactions_page = trans_paginator.get_page(trans_page_number)
+
+    budg_page_number = request.GET.get("bpage", 1)
+    budgets_page = budg_paginator.get_page(budg_page_number)
+
+    context = {
+        "form": form,
+        "transactions_page": transactions_page,
+        "budgets_page": budgets_page,
+    }
+    return render(request, "search.html", context)

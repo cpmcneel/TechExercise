@@ -35,8 +35,6 @@ class CreateBudgetLimit(forms.ModelForm):
         }
 
 class SearchForm(forms.Form):
-    query = forms.CharField(required=False, label="Search term")
-    start_date = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}))
-    end_date = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}))
-    year = forms.IntegerField(required=False)
-    month = forms.IntegerField(required=False)
+    month = forms.IntegerField(required=False, label="Month(MM)")
+    year = forms.IntegerField(required=False, label="Year(YYYY)")
+    term = forms.CharField(required=False, label="Transaction Name") 
