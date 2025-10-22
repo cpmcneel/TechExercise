@@ -6,105 +6,163 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verispend</title>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
 </head>
-<body>
+
+<body class="bg-gray-50 min-h-screen text-gray-800 ">
     {% block header %}
-    <div>
-        <ul class="dash-header">
-            <h2 class="dash-header-title">{{user}}'s Dashboard</h2>
-            <a href="{% url 'dashboard' %}">Home</a>
-            <a href="{% url 'search' %}">Search</a>
-            <form class="logout" action="{% url 'logout' %}" method="POST">
+    <div class="mx-auto flex justify-between items-center py-4 px-6 w-full bg-emerald-700">
+        <div class="flex items-center justify-between space-x-4 w-full">
+            <h2 class=" text-white text-xl font-semibold justify-start">{{user}}'s Dashboard</h2>
+            <div class="text-white flex justify-center w-full ">
+                <a class="px-6 py-2 items-center justify-center rounded-sm font-semibold transform hover:scale-105 hover:underline underline-offset-4 decoration-2 decoration-emerald-400 transition-all" href="{% url 'dashboard' %}">
+                    Dashboard
+                </a>
+                <a class=" px-6 py-2 items-center justify-center rounded-sm font-semibold transform hover:scale-105 hover:underline underline-offset-4 decoration-2 decoration-emerald-400 transition-all" href="{% url 'search' %}">
+                    Search
+                </a>
+            </div>
+            <form class="" action="{% url 'logout' %}" method="POST">
                 {% csrf_token %}
-                <button class"logout-button" aria-label="User logout" title="User logout">
+                <button class="bg-emerald-400 hover:bg-emerald-300 px-6 py-2 items-center justify-center rounded-full font-semibold shadow-md transition-transform transform hover:scale-105" aria-label="User logout" title="User logout">
                     Logout
                 </button>
             </form>
-        </ul>
+        </div>
     </div>
-<hr>
+    <hr>
     {% endblock header %}
     {% block content %}
     <div>
-        <h3 class="category-header">Create Category</h3>
-        <form class="category-submition" action="{% url 'create_category' %}" method="POST">
-            {% csrf_token %}
-            {{ category_form }}
-            <button class="category-submition-submit">Add Category</button>
-        </form>
-        <h3>Budget Limit: ${{budget.total_limit|floatformat:2}}</h3>
-                    <form class="budget-limit" action="{% url 'create_budget_limit' %}" method="POST">
-                        {% csrf_token %}
-                        {{budget_limit_form}}
-                        <button class="budget-limit-submit">Set Limit</button>
-                    </form>
-        <hr>
-        <h3 class="categories-header">Categories</h3>
-        <div>
-            {% for category in categories %}
-            {% if category.name != "Savings" %}
-            <div>
-                <div>
-                    <h4>{{category.name}} ${{category.spent|floatformat:2}}/${{category.limit|floatformat:2}}</h4>
-                    <form action="{% url 'delete_category' category.public_id %}" method="POST">
-                        {% csrf_token %}
-                        <button class="category-delete">Remove Category</button>
-                    </form>
-                </div>
-                {% for transaction in category.transactions.all %}
-                        <div>
-                            <p>{{transaction.name}} - ${{transaction.amount|floatformat:2}}</p>
-                            <form action="{% url 'delete_transaction' transaction.public_id category.public_id %}" method="POST">
-                                {% csrf_token %}
-                                <button class="transaction-delete">-</button>
-                            </form>
-                        </div>
-                {% empty %}
-                    <p>No Transactions Yet</p>
-                {% endfor %}
-                </div>
-                <form class="transaction-submition" action="{% url 'create_transaction' category.public_id %}" method="POST">
+        <div class="flex flex-row mx-auto justify-between items-center py-2 px-6 w-full">
+            <div class="flex flex-col w-144">
+                <h3 class="text-lg font-semibold text-emerald-700 mb-4">Create Category</h3>
+                <form class="flex flex-row items-center" action="{% url 'create_category' %}" method="POST">
                     {% csrf_token %}
-                    {{transaction_form}}
-                    <button class="transaction-form-submit">Add Transaction</button>
+                    {% for field in category_form %}
+                    <div class="flex flex-row px-3">
+                        <label for="{{ field.id_for_label }}" class="block text-gray-700 font-semibold mb-1 pr-2 p-2">
+                        {{ field.label }}: 
+                        </label>
+                        <div class="flex flex-col items-center w-full p-2">
+                        {{ field }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <button class="text-white bg-cyan-700 hover:bg-cyan-600 items-center justify-center rounded-full font-semibold shadow-md transition-transform transform hover:scale-105 p-2">
+                        Add Category
+                    </button>
                 </form>
             </div>
-            {% endif %}
-            {% endfor %}
-            <div>
-                <div class="savings-header">
-                    <h4>{{savings_category.name}}   Goal: ${{savings_category.spent|floatformat:2}}/${{savings_category.limit|floatformat:2}}</h4>
-                        <form class="savings-goal" action="{% url 'create_savings_goal' savings_category.public_id %}" method="POST">
-                        {% csrf_token %}
-                        {{savings_goal_form}}
-                        <button class="form-submit">Set Goal</button>
-                    </form>
-                </div>
-                {% for transaction in savings_category.transactions.all %}
-                        <div>
-                            <p>Saved - ${{transaction.amount|floatformat:2}}</p>
-                            <form action="{% url 'delete_transaction' transaction.public_id savings_category.public_id %}" method="POST">
-                                {% csrf_token %}
-                                <button class="transaction-delete">-</button>
-                            </form>
-                        </div>
-                {% empty %}
-                    <p>Nothing Saved Yet</p>
-                {% endfor %}
-                </div>
-                <form class="savings-submition" action="{% url 'create_savings_transaction' savings_category.public_id %}" method="POST">
+            <div class="flex flex-col">
+                <h3 class="text-lg font-semibold text-emerald-700 mb-4 p-2">Total Allocated: ${{categories_total|floatformat:2}}/${{budget.total_limit|floatformat:2}}</h3>
+                <h3 class="text-lg font-semibold text-emerald-700 mb-4 p-2">Total Spent: ${{budget.total_spent|floatformat:2}}/${{budget.total_limit|floatformat:2}}</h3>
+            </div>
+            <div class="flex flex-col w-144">
+                    <h3 class="text-lg font-semibold text-emerald-700 mb-4">Budget Limit: ${{budget.total_limit|floatformat:2}}</h3>
+                <form class="flex flex-row px-5 items-center" action="{% url 'create_budget_limit' %}" method="POST">
                     {% csrf_token %}
-                    {{savings_form}}
-                    <button class="transaction-form-submit">Add to Savings</button>
+                    {% for field in budget_limit_form %}
+                    <div class="flex flex-col items-center w-full p-3">
+                    {{ field }}
+                    </div>
+                    {% endfor %}
+                    <button class="text-white bg-cyan-700 hover:bg-cyan-600 items-center justify-center rounded-full font-semibold shadow-md transition-transform transform hover:scale-105 p-2">
+                        Set Limit
+                    </button>
                 </form>
             </div>
         </div>
-        <hr>
-        <div class="totals">
-            <h3>Total Allocated: ${{categories_total|floatformat:2}}/${{budget.total_limit|floatformat:2}}</h3>
-            <h3>Total Spent: ${{budget.total_spent|floatformat:2}}/${{budget.total_limit|floatformat:2}}</h3>
+
+        <h3  class="text-3xl font-semibold text-emerald-700 mb-4 pl-4">Categories</h3>
+        <div class="grid xl:grid-cols-[1fr_24rem] gap-6 items-start pr-6 xl:pr-8 pl-4">
+            <div class="grid grid-flow-col auto-cols-[calc((100%-3rem)/3)] gap-6 overflow-x-auto snap-x snap-mandatory pl-4 rounded-lg">
+                {% for category in categories %}
+                {% if category.name != "Savings" %}
+                <div class="snap-start bg-white rounded-lg shadow-lg border border-gray-300">
+                    <div class="flex flex-col h-[28rem]">
+                        <div class="p-5 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <h4 class="text-lg font-medium">
+                                    {{category.name}}
+                                    <span class="ml-1 text-sm text-gray-600">
+                                    ${{category.spent|floatformat:2}}/${{category.limit|floatformat:2}}
+                                    </span>
+                                </h4>
+                                <form action="{% url 'delete_category' category.public_id %}" method="POST">
+                                    {% csrf_token %}
+                                    <button class="text-white bg-red-500 hover:bg-red-600 px-4 py-1.5 rounded-lg text-xs font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400">
+                                    Remove Category
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="flex-1 overflow-y-auto px-5 py-3 space-y-2">
+                            {% for transaction in category.transactions.all %}
+                            <div class="flex justify-between items-center border-b border-gray-100 py-2 last:border-b-0">
+                                <p class="text-sm text-gray-800">
+                                {{transaction.name}} - ${{transaction.amount|floatformat:2}}
+                                </p>
+                                <form action="{% url 'delete_transaction' transaction.public_id category.public_id %}" method="POST">
+                                {% csrf_token %}
+                                <button class="transaction-delete inline-flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-red-600" title="Delete">-</button>
+                                </form>
+                            </div>
+                            {% empty %}
+                            <p class="text-sm text-gray-500">No Transactions Yet</p>
+                            {% endfor %}
+                        </div>
+                        <form class="border-t border-gray-200 p-5" action="{% url 'create_transaction' category.public_id %}" method="POST">
+                            {% csrf_token %}
+                            {{transaction_form}}
+                            <button class="w-full mt-3 inline-flex items-center justify-center rounded-lg bg-cyan-700 hover:bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm">
+                            Add Transaction
+                            </button>
+                        </form>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                <aside class="w-full xl:w-[24rem]">
+                    <div class="bg-white rounded-lg shadow-lg border border-gray-300 h-[28rem] flex flex-col">
+                        <div class="p-3 border-b border-gray-200">
+                            <h4 class="text-lg font-medium">
+                                {{savings_category.name}}
+                                <span class="ml-1 text-sm text-gray-600">
+                                    Goal: ${{savings_category.spent|floatformat:2}}/${{savings_category.limit|floatformat:2}}
+                                    </span>
+                            </h4>
+                                <form class="" action="{% url 'create_savings_goal' savings_category.public_id %}" method="POST">
+                                {% csrf_token %}
+                                {{savings_goal_form}}
+                                <button class="text-white bg-cyan-700 hover:bg-cyan-600 px-4 py-1.5 mt-3 rounded-lg text-xs font-semibold shadow-sm">Set Goal</button>
+                            </form>
+                        </div>
+                        <div class="flex-1 overflow-y-auto px-5 py-3 space-y-2">
+                            {% for transaction in savings_category.transactions.all %}
+                            <div  class="flex justify-between items-center border-b border-gray-100 py-2 last:border-b-0">
+                                <p class="text-sm text-gray-800">Saved - ${{transaction.amount|floatformat:2}}</p>
+                                <form action="{% url 'delete_transaction' transaction.public_id savings_category.public_id %}" method="POST">
+                                    {% csrf_token %}
+                                    <button class="transaction-delete inline-flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-red-600" title="Delete">-</button>
+                                </form>
+                            </div>
+                            {% empty %}
+                            <p class="text-sm text-gray-800">Nothing Saved Yet</p>
+                            {% endfor %}
+                        </div>
+                        <form class="border-t border-gray-200 p-2" action="{% url 'create_savings_transaction' savings_category.public_id %}" method="POST">
+                            {% csrf_token %}
+                            Amount:{{savings_form}}
+                            <button class="text-white bg-cyan-700 hover:bg-cyan-600 px-4 py-2.5 mt-3 rounded-lg text-xs font-semibold shadow-sm w-full">Add to Savings</button>
+                        </form>
+                    </div>
+                    </div>
+                </aside>
+            </div>
         </div>
-    </div>
+    </div> 
 {% endblock content %}
 </body>
 </html>
