@@ -1,4 +1,7 @@
 
-# local binaries
+#tailwindcss files
 /tailwindcss
 /tailwindcss*
+
+#db
+db.sqlite3

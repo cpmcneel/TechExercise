@@ -15,16 +15,16 @@
         <div class="flex items-center justify-between space-x-4 w-full">
             <h2 class=" text-white text-xl font-semibold justify-start">{{user}}'s Dashboard</h2>
             <div class="text-white flex justify-center w-full ">
-                <a class="px-6 py-2 items-center justify-center rounded-sm font-semibold transform hover:scale-105 hover:underline underline-offset-4 decoration-2 decoration-emerald-400 transition-all" href="{% url 'dashboard' %}">
+                <a class="px-3 md:px-6 py-2 items-center justify-center rounded-sm font-semibold transform hover:scale-105 hover:underline underline-offset-4 decoration-2 decoration-emerald-400 transition-all" href="{% url 'dashboard' %}">
                     Dashboard
                 </a>
-                <a class=" px-6 py-2 items-center justify-center rounded-sm font-semibold transform hover:scale-105 hover:underline underline-offset-4 decoration-2 decoration-emerald-400 transition-all" href="{% url 'search' %}">
+                <a class="px-3 md:px-6 py-2 items-center justify-center rounded-sm font-semibold transform hover:scale-105 hover:underline underline-offset-4 decoration-2 decoration-emerald-400 transition-all" href="{% url 'search' %}">
                     Search
                 </a>
             </div>
             <form class="" action="{% url 'logout' %}" method="POST">
                 {% csrf_token %}
-                <button class="bg-emerald-400 hover:bg-emerald-300 px-6 py-2 items-center justify-center rounded-full font-semibold shadow-md transition-transform transform hover:scale-105" aria-label="User logout" title="User logout">
+                <button class="bg-emerald-400 hover:bg-emerald-300 px-3 md:px-6 py-2 items-center justify-center rounded-full font-semibold shadow-md transition-transform transform hover:scale-105" aria-label="User logout" title="User logout">
                     Logout
                 </button>
             </form>
@@ -34,7 +34,7 @@
     {% endblock header %}
     {% block content %}
     <div>
-        <div class="flex flex-row mx-auto justify-between items-center py-2 px-6 w-full">
+        <div class="flex flex-row flex-wrap mx-auto justify-between items-center py-4 md:py-2 px-6 w-full">
             <div class="flex flex-col w-144">
                 <h3 class="text-lg font-semibold text-emerald-700 mb-4">Create Category</h3>
                 <form class="flex flex-row items-center" action="{% url 'create_category' %}" method="POST">
@@ -76,12 +76,12 @@
 
         <h3  class="text-3xl font-semibold text-emerald-700 mb-4 pl-4">Categories</h3>
         <div class="grid xl:grid-cols-[1fr_24rem] gap-6 items-start pr-6 xl:pr-8 pl-4">
-            <div class="grid grid-flow-col auto-cols-[calc((100%-3rem)/3)] gap-6 overflow-x-auto snap-x snap-mandatory pl-4 rounded-lg">
+            <div class="grid grid-flow-col auto-cols-[80%] sm:auto-cols-[60%] md:auto-cols-[40%] lg:auto-cols-[calc((100%-3rem)/3)] gap-6 overflow-x-auto snap-x snap-mandatory pl-4 rounded-lg">
                 {% for category in categories %}
                 {% if category.name != "Savings" %}
                 <div class="snap-start bg-white rounded-lg shadow-lg border border-gray-300">
                     <div class="flex flex-col h-[28rem]">
-                        <div class="p-5 border-b border-gray-200">
+                        <div class="min-w-md p-5 border-b border-gray-200">
                             <div class="flex justify-between items-center">
                                 <h4 class="text-lg font-medium">
                                     {{category.name}}

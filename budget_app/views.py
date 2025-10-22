@@ -186,7 +186,7 @@ def create_savings_transaction(request, category_id): #handle transaction form s
         form = CreateSavingsTransaction(request.POST)
         if form.is_valid():
             new_savings_transaction = form.save(commit=False)
-            
+            new_savings_transaction.name = "Savings Contribution"
             date_today = date.today()
             budget = get_object_or_404(Budget, user=request.user, year=date_today.year, month=date_today.month)
             savings_category = get_object_or_404(Category, public_id=category_id, user=request.user)
