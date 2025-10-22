@@ -57,9 +57,6 @@ class Category(models.Model):
 
 
     class Meta:
-        constraints = [ #unique categories in each budget
-            models.UniqueConstraint(fields=["budget", "name"], name="unique_user_category"),
-        ]
         ordering = ["-date"]
         verbose_name = "Category"
         verbose_name_plural = "Categories"

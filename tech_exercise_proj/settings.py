@@ -123,4 +123,5 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 import os
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'budget_app/static/')
