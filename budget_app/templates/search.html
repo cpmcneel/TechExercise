@@ -59,7 +59,7 @@
             {% for t in transactions_page %}
             <li class="py-2">
                 <p class="text-md">{{ t.name }} - ${{ t.amount|floatformat:2 }}</p>
-                <p>({{ t.date }})</p>
+                <p>{{ t.date }} CST</p>
             </li>
             {% empty %}
             <li class="text-gray-500">No transactions found.</li>
